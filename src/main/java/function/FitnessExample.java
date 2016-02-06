@@ -16,7 +16,6 @@ public class FitnessExample {
         private boolean includeSuiteSetup;
         private StringBuffer content;
         private WikiPage wikiPage;
-        private static final String NOT_INCLUDE = "!include";
 
         public TestableHtml(PageData pageData, boolean includeSuiteSetup) {
             this.pageData = pageData;
@@ -27,10 +26,11 @@ public class FitnessExample {
 
         public String html() throws Exception {
 
+            String NOT_INCLUDE = "!include";
             String command = NOT_INCLUDE + " -setup .";
             WikiPage suiteSetup = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_SETUP_NAME, wikiPage);
             WikiPage setup = PageCrawlerImpl.getInheritedPage("SetUp", wikiPage);
-            if (isTest()) {
+            if (pageData.hasAttribute("Test")) {
                 addSetup(command, suiteSetup, setup);
             }
 
@@ -39,7 +39,7 @@ public class FitnessExample {
             String _command = NOT_INCLUDE + " -teardown .";
             WikiPage teardown = PageCrawlerImpl.getInheritedPage("TearDown", wikiPage);
             WikiPage suiteTeardown = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_TEARDOWN_NAME, wikiPage);
-            if (isTest()) {
+            if (pageData.hasAttribute("Test")) {
                 addTearDown(_command, teardown, suiteTeardown);
             }
 
@@ -47,30 +47,24 @@ public class FitnessExample {
             return pageData.getHtml();
         }
 
-        private boolean isTest() throws Exception {
-            return pageData.hasAttribute("Test");
+        private void addTearDown(String _command, WikiPage teardown, WikiPage suiteTeardown) throws Exception {
+            addPath2(_command, teardown);
+            if (includeSuiteSetup) {
+                addPath2(_command, suiteTeardown);
+            }
         }
 
-        private void addTearDown(String _command, WikiPage teardown, WikiPage suiteTeardown) throws Exception {
+        private void addPath2(String _command, WikiPage teardown) throws Exception {
             if (teardown != null) {
                 addPath(_command, teardown);
-            }
-            if (includeSuiteSetup) {
-                if (suiteTeardown != null) {
-                    addPath(_command, suiteTeardown);
-                }
             }
         }
 
         private void addSetup(String command, WikiPage suiteSetup, WikiPage setup) throws Exception {
             if (includeSuiteSetup) {
-                if (suiteSetup != null) {
-                    addPath(command, suiteSetup);
-                }
+                addPath2(command, suiteSetup);
             }
-            if (setup != null) {
-                addPath(command, setup);
-            }
+            addPath2(command, setup);
         }
 
         private void addPath(String command, WikiPage testProcess) throws Exception {
