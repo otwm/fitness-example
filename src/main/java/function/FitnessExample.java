@@ -16,6 +16,7 @@ public class FitnessExample {
         private boolean includeSuiteSetup;
         private StringBuffer content;
         private WikiPage wikiPage;
+        private static final String NOT_INCLUDE = "!include";
 
         public TestableHtml(PageData pageData, boolean includeSuiteSetup) {
             this.pageData = pageData;
@@ -26,24 +27,28 @@ public class FitnessExample {
 
         public String html() throws Exception {
 
-            String command = "!include -setup .";
+            String command = NOT_INCLUDE + " -setup .";
             WikiPage suiteSetup = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_SETUP_NAME, wikiPage);
             WikiPage setup = PageCrawlerImpl.getInheritedPage("SetUp", wikiPage);
-            if (pageData.hasAttribute("Test")) {
+            if (isTest()) {
                 addSetup(command, suiteSetup, setup);
             }
 
             content.append(pageData.getContent());
 
-            String _command = "!include -teardown .";
+            String _command = NOT_INCLUDE + " -teardown .";
             WikiPage teardown = PageCrawlerImpl.getInheritedPage("TearDown", wikiPage);
             WikiPage suiteTeardown = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_TEARDOWN_NAME, wikiPage);
-            if (pageData.hasAttribute("Test")) {
+            if (isTest()) {
                 addTearDown(_command, teardown, suiteTeardown);
             }
 
             pageData.setContent(content.toString());
             return pageData.getHtml();
+        }
+
+        private boolean isTest() throws Exception {
+            return pageData.hasAttribute("Test");
         }
 
         private void addTearDown(String _command, WikiPage teardown, WikiPage suiteTeardown) throws Exception {
