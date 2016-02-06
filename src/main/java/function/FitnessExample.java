@@ -30,14 +30,7 @@ public class FitnessExample {
             WikiPage suiteSetup = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_SETUP_NAME, wikiPage);
             WikiPage setup = PageCrawlerImpl.getInheritedPage("SetUp", wikiPage);
             if (pageData.hasAttribute("Test")) {
-                if (includeSuiteSetup) {
-                    if (suiteSetup != null) {
-                        addPath(command, suiteSetup);
-                    }
-                }
-                if (setup != null) {
-                    addPath(command, setup);
-                }
+                addSetup(command, suiteSetup, setup);
             }
 
             content.append(pageData.getContent());
@@ -46,18 +39,33 @@ public class FitnessExample {
             WikiPage teardown = PageCrawlerImpl.getInheritedPage("TearDown", wikiPage);
             WikiPage suiteTeardown = PageCrawlerImpl.getInheritedPage(SuiteResponder.SUITE_TEARDOWN_NAME, wikiPage);
             if (pageData.hasAttribute("Test")) {
-                if (teardown != null) {
-                    addPath(_command, teardown);
-                }
-                if (includeSuiteSetup) {
-                    if (suiteTeardown != null) {
-                        addPath(_command, suiteTeardown);
-                    }
-                }
+                addTearDown(_command, teardown, suiteTeardown);
             }
 
             pageData.setContent(content.toString());
             return pageData.getHtml();
+        }
+
+        private void addTearDown(String _command, WikiPage teardown, WikiPage suiteTeardown) throws Exception {
+            if (teardown != null) {
+                addPath(_command, teardown);
+            }
+            if (includeSuiteSetup) {
+                if (suiteTeardown != null) {
+                    addPath(_command, suiteTeardown);
+                }
+            }
+        }
+
+        private void addSetup(String command, WikiPage suiteSetup, WikiPage setup) throws Exception {
+            if (includeSuiteSetup) {
+                if (suiteSetup != null) {
+                    addPath(command, suiteSetup);
+                }
+            }
+            if (setup != null) {
+                addPath(command, setup);
+            }
         }
 
         private void addPath(String command, WikiPage testProcess) throws Exception {
